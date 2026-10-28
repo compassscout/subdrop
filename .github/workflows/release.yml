@@ -52,7 +52,7 @@ jobs:
           )
           pyinstaller @common --name SubDrop --distpath dist --workpath build scripts/launcher.py
           pyinstaller @common --onefile --name SubDrop --distpath dist-exe --workpath build-exe scripts/launcher.py
-          Compress-Archive -Path dist/SubDrop -DestinationPath SubDrop-portable.zip -Force
+          tar -a -c -f SubDrop-portable.zip -C dist SubDrop
           Move-Item dist-exe/SubDrop.exe SubDrop.exe
 
       - name: Upload artifact
