@@ -37,7 +37,7 @@ jobs:
             scripts/launcher.py
 
       - name: Package
-        run: Compress-Archive -Path dist/SubDrop/* -DestinationPath SubDrop-windows-x64.zip
+        run: tar -a -c -f SubDrop-windows-x64.zip -C dist SubDrop
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -50,4 +50,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: SubDrop-windows-x64.zip
+          overwrite_files: true
           generate_release_notes: true
