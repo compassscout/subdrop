@@ -1,4 +1,8 @@
-"""媒体层：ffprobe 读时长，ffmpeg 抽音轨并切块。
+"""媒体层：读时长、抽音轨、切块。
+
+只依赖一个 ffmpeg 可执行文件（不依赖 ffprobe），因为打包时每多一个
+200MB 的静态二进制都是灾难。媒体信息从 `ffmpeg -i` 的 stderr 里解析，
+足够我们判断时长、有没有音轨、分辨率。
 
 长视频的第一原则：整段音频不要一次性读进内存。这里统一走
 `ffmpeg -f segment`，直接产出 10 分钟左右的 mp3 小块，边转边删。
@@ -6,7 +10,7 @@
 
 from __future__ import annotations
 
-import json
+import re
 import shutil
 import subprocess
 import sys
@@ -22,6 +26,9 @@ AUDIO_EXTENSIONS = {".mp3", ".wav", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".
 SUPPORTED_EXTENSIONS = VIDEO_EXTENSIONS | AUDIO_EXTENSIONS
 
 CREATE_NO_WINDOW = 0x08000000 if sys.platform == "win32" else 0
+
+_DURATION_RE = re.compile(r"Duration:\s*(\d+):(\d{2}):(\d{2}(?:\.\d+)?)")
+_VIDEO_SIZE_RE = re.compile(r"Video:.*?(\d{2,5})x(\d{2,5})")
 
 
 class MediaError(RuntimeError):
@@ -45,12 +52,23 @@ class MediaInfo:
 
 
 def _bundled_dirs() -> list[Path]:
+    """打包后 ffmpeg 可能被放在 exe 同级、_internal/，或 onefile 的临时解压目录。"""
     dirs: list[Path] = []
     if getattr(sys, "frozen", False):
         exe_dir = Path(sys.executable).resolve().parent
-        dirs += [exe_dir, exe_dir / "resources", exe_dir / "_internal"]
+        meipass = Path(getattr(sys, "_MEIPASS", exe_dir))
+        dirs += [
+            exe_dir / "ffmpeg",
+            meipass / "ffmpeg",
+            exe_dir,
+            meipass,
+            exe_dir / "resources",
+            meipass / "resources",
+            exe_dir / "_internal",
+        ]
     here = Path(__file__).resolve()
-    dirs += [here.parents[2] / "resources", here.parents[3] / "resources"]
+    root = here.parents[3]
+    dirs += [root / "resources" / "ffmpeg", root / "resources", here.parents[2] / "resources"]
     return dirs
 
 
@@ -85,26 +103,29 @@ def _run(cmd: list[str]) -> subprocess.CompletedProcess:
 
 
 def probe(path: Path, ffmpeg_dir: str = "") -> MediaInfo:
-    ffprobe = resolve_tool("ffprobe", ffmpeg_dir)
-    proc = _run([
-        ffprobe, "-v", "error",
-        "-show_entries", "format=duration:stream=codec_type,width,height",
-        "-of", "json", str(path),
-    ])
-    if proc.returncode != 0:
-        raise MediaError(f"无法读取媒体信息：{proc.stderr.strip()[:300]}")
-    try:
-        data = json.loads(proc.stdout or "{}")
-    except json.JSONDecodeError as exc:
-        raise MediaError("ffprobe 返回了无法解析的内容") from exc
+    if not path.is_file():
+        raise MediaError(f"文件不存在：{path}")
 
-    duration = float(data.get("format", {}).get("duration") or 0.0)
-    streams = data.get("streams", [])
-    has_audio = any(s.get("codec_type") == "audio" for s in streams)
-    width = next((int(s.get("width") or 0) for s in streams if s.get("codec_type") == "video"), 0)
-    height = next((int(s.get("height") or 0) for s in streams if s.get("codec_type") == "video"), 0)
-    if duration <= 0:
+    ffmpeg = resolve_tool("ffmpeg", ffmpeg_dir)
+    # 不带输出参数时 ffmpeg 会以 1 退出，但会把媒体信息打到 stderr，正是我们要的
+    proc = _run([ffmpeg, "-hide_banner", "-nostdin", "-i", str(path)])
+    info = proc.stderr or ""
+
+    if "No such file or directory" in info or "Invalid data found" in info:
+        raise MediaError("这个文件读不了，可能已损坏或不是音视频文件")
+
+    match = _DURATION_RE.search(info)
+    if not match:
         raise MediaError("读不到时长，文件可能已损坏或不是音视频文件")
+    hours, minutes, seconds = match.groups()
+    duration = int(hours) * 3600 + int(minutes) * 60 + float(seconds)
+    if duration <= 0:
+        raise MediaError("媒体时长为 0，无法转录")
+
+    has_audio = "Audio:" in info
+    size = _VIDEO_SIZE_RE.search(info)
+    width = int(size.group(1)) if size else 0
+    height = int(size.group(2)) if size else 0
     return MediaInfo(path=path, duration=duration, has_audio=has_audio, width=width, height=height)
 
 

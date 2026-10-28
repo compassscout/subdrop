@@ -8,13 +8,17 @@
 
 把本地视频拖进窗口，几分钟后旁边多出一个 `.srt`。
 
-## 下载（Windows 免安装）
+## 下载（Windows，免安装）
 
-1. 打开 [Releases](https://github.com/compassscout/subdrop/releases/latest)，下载 `SubDrop-windows-x64.zip`（约 38 MB）
-2. 解压到任意目录，双击 `SubDrop.exe`
-3. 系统里需要有 ffmpeg（`ffmpeg -version` 能跑就行），否则设置页会提示
+打开 [Releases](https://github.com/compassscout/subdrop/releases/latest)，二选一：
 
-不需要装 Python。首次运行去「设置」填一个 API Key，之后就不用再管了。
+| 文件 | 大小 | 说明 |
+|---|---|---|
+| `SubDrop.exe` | 66 MB | **单文件**，双击就跑，解压/安装都省了（首次启动约 5 秒，因为要释放内置组件） |
+| `SubDrop-portable.zip` | 66 MB | 解压后双击 `SubDrop.exe`，启动快（约 1 秒），适合放 U 盘 |
+
+两个版本都**内置 ffmpeg**，不需要你另外安装任何东西，也不需要 Python。
+第一次运行去「设置」里粘一个 API Key，之后拖视频进去就行。
 
 
 专为**长视频**做的：6 小时课程、10 小时直播回放，切成 10 分钟一块送去识别，
@@ -30,9 +34,9 @@
 - **MIT 协议**，代码干净，随便改随便商用
 - **单文件即可运行**，没有安装器、没有后台服务、不改注册表
 
-## 快速开始
+## 快速开始（从源码运行）
 
-需要 Python 3.10+ 和 ffmpeg（`ffmpeg -version` 能跑就行）。
+需要 Python 3.10+ 和 ffmpeg（从源码跑时用系统的 ffmpeg；打包版已内置）。
 
 ```bash
 git clone https://github.com/compassscout/subdrop.git
@@ -60,10 +64,14 @@ uv run subdrop-cli 你的视频.mp4 --mock
 
 ### 命令行
 
+打包版也支持命令行（`--cli` 之后的参数和 `subdrop-cli` 一致）：
+
 ```bash
 subdrop-cli video.mp4                       # 输出 video.srt
 subdrop-cli video.mp4 -o out.srt            # 指定输出
 subdrop-cli video.mp4 --mock                # 不联网，跑通流程用
+
+SubDrop.exe --cli video.mp4                 # 打包版等价写法
 ```
 
 ## 选哪个 ASR 服务
@@ -87,12 +95,15 @@ subdrop-cli video.mp4 --mock                # 不联网，跑通流程用
 ## 实现要点
 
 ```
-ffprobe 读时长
+ffmpeg 读时长 + 探测音轨
   └─ ffmpeg 抽 16kHz 单声道 mp3，按 600s 切块     ← 内存恒定，6 小时不爆
        └─ 逐块 POST /audio/transcriptions          ← 每块完成即落盘缓存
             └─ 按块偏移平移时间戳，修复接缝断句    ← 避免字幕出现半句话
                  └─ 排序 / 去空 / 消重叠 → .srt
 ```
+
+只依赖一个 ffmpeg 可执行文件（不依赖 ffprobe）：媒体信息从 `ffmpeg -i` 的
+stderr 里解析，这样安装包能少带一个 200MB 的二进制。
 
 缓存按「文件路径 + 大小 + 修改时间 + 分块时长」散列，换文件不会串味。
 
@@ -100,12 +111,12 @@ ffprobe 读时长
 
 - [x] 本地视频 → SRT，长视频分块与断点续跑
 - [x] OpenAI 兼容云 ASR（Groq / OpenAI / 硅基流动 / 自建）
+- [x] 打包成 Windows 免安装 exe，内置 ffmpeg
 - [ ] 本地 faster-whisper 后端（离线、免 Key）
 - [ ] 批量队列（拖一堆视频进去）
 - [ ] 字幕翻译（LLM，可选）
 - [ ] 字幕烧录（ASS 样式 + ffmpeg）
 - [ ] 视频链接下载（yt-dlp）
-- [ ] 打包成 Windows 免安装 exe
 
 ## 开发
 
@@ -114,9 +125,20 @@ uv sync --extra dev
 uv run pytest -q
 ```
 
+打包（需要 Node.js 取静态 ffmpeg）：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
+```
+
+产物：`dist-exe\SubDrop.exe`（单文件）和 `SubDrop-portable.zip`（目录版）。
+
 ## 许可证
 
 MIT。见 [LICENSE](LICENSE)。
+
+分发包内置的 FFmpeg 是 GPL v3，Qt/PySide6 是 LGPL v3，
+相关声明和源码地址见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 界面与交互参考了 [VideoCaptioner](https://github.com/WEIFENG2333/VideoCaptioner)
 的使用体验，但代码、图标、文案均为独立实现，未使用其源码或素材。

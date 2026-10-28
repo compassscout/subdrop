@@ -18,37 +18,57 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install build deps
         run: |
           python -m pip install --upgrade pip
           pip install "PySide6-Essentials>=6.6" requests pyinstaller
           pip install -e . --no-deps
 
-      - name: Build
+      - name: Fetch static ffmpeg
         run: |
-          pyinstaller --noconfirm --windowed --name SubDrop `
-            --icon assets/icon.ico `
-            --add-data "assets;assets" `
-            --paths src `
-            --exclude-module PySide6.QtQml `
-            --exclude-module PySide6.QtQuick `
-            --exclude-module tkinter `
-            --exclude-module pytest `
-            scripts/launcher.py
+          New-Item -ItemType Directory -Force -Path tools | Out-Null
+          npm install ffmpeg-static --no-save --prefix .
+          Copy-Item node_modules/ffmpeg-static/ffmpeg.exe tools/ffmpeg.exe -Force
+          "{0:N1} MB" -f ((Get-Item tools/ffmpeg.exe).Length / 1MB)
 
-      - name: Package
-        run: tar -a -c -f SubDrop-windows-x64.zip -C dist SubDrop
+      - name: Build (onedir + onefile)
+        run: |
+          $common = @(
+            "--noconfirm", "--clean", "--windowed",
+            "--icon", "assets/icon.ico",
+            "--add-data", "assets;assets",
+            "--add-binary", "tools/ffmpeg.exe;ffmpeg",
+            "--paths", "src",
+            "--exclude-module", "PySide6.QtQml",
+            "--exclude-module", "PySide6.QtQuick",
+            "--exclude-module", "PySide6.QtNetwork",
+            "--exclude-module", "PySide6.QtWebEngineCore",
+            "--exclude-module", "tkinter",
+            "--exclude-module", "pytest"
+          )
+          pyinstaller @common --name SubDrop --distpath dist --workpath build scripts/launcher.py
+          pyinstaller @common --onefile --name SubDrop --distpath dist-exe --workpath build-exe scripts/launcher.py
+          Compress-Archive -Path dist/SubDrop -DestinationPath SubDrop-portable.zip -Force
+          Move-Item dist-exe/SubDrop.exe SubDrop.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: SubDrop-windows-x64
-          path: SubDrop-windows-x64.zip
+          name: SubDrop-windows
+          path: |
+            SubDrop.exe
+            SubDrop-portable.zip
 
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: SubDrop-windows-x64.zip
+          files: |
+            SubDrop.exe
+            SubDrop-portable.zip
           overwrite_files: true
           generate_release_notes: true

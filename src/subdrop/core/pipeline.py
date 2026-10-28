@@ -112,7 +112,7 @@ class TranscribeJob:
         offset = 0.0
         for index, audio in enumerate(chunks):
             self._check_cancel()
-            chunk_len = self._chunk_duration(audio, offset, media, chunk_seconds)
+            chunk_len = self._chunk_duration(offset, media, chunk_seconds)
             cached_result = cached[index]
             if cached_result is not None:
                 results.append(cached_result)
@@ -193,12 +193,12 @@ class TranscribeJob:
         return chunks
 
     @staticmethod
-    def _chunk_duration(audio: Path, offset: float, media: MediaInfo, chunk_seconds: int) -> float:
-        try:
-            info = probe(audio)
-            return max(0.5, info.duration)
-        except MediaError:
-            return max(0.5, min(chunk_seconds, media.duration - offset))
+    def _chunk_duration(offset: float, media: MediaInfo, chunk_seconds: int) -> float:
+        """分块按固定时长切，只有最后一块按总时长收尾，不必再调用 ffmpeg 探测。"""
+        remaining = media.duration - offset
+        if remaining <= 0:
+            return float(chunk_seconds)
+        return max(0.5, min(float(chunk_seconds), remaining))
 
     @staticmethod
     def _load_chunk(job_dir: Path, index: int) -> ChunkResult | None:

@@ -6,11 +6,21 @@ __pycache__/
 .venv-build/
 venv/
 dist/
+dist-exe/
 build/
+build-exe/
 .pytest_cache/
+.ruff_cache/
 .coverage
 
-# SubDrop runtime
+# 构建产物 / 第三方二进制（体积大，不进仓库）
+tools/
+node_modules/
+*.spec
+SubDrop*.zip
+SubDrop*.exe
+
+# 运行时
 *.log
 cache/
 

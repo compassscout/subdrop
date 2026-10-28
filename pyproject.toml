@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "subdrop"
-version = "0.1.0"
+version = "0.2.0"
 description = "拖进去，出字幕 —— 本地视频一键生成 SRT 字幕"
 readme = "README.md"
 requires-python = ">=3.10"
