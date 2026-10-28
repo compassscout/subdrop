@@ -14,9 +14,12 @@ from .config import Settings
 def asset_path(name: str) -> Path:
     if getattr(sys, "frozen", False):
         base = Path(sys.executable).resolve().parent
-    else:
-        base = Path(__file__).resolve().parents[2]
-    return base / "assets" / name
+        candidates = [base / "assets" / name, base / "_internal" / "assets" / name]
+        for candidate in candidates:
+            if candidate.is_file():
+                return candidate
+        return candidates[0]
+    return Path(__file__).resolve().parents[2] / "assets" / name
 
 
 def _load_stylesheet(app: QApplication) -> None:
@@ -44,7 +47,9 @@ def run() -> int:
     app.setOrganizationName("SubDrop")
     _load_stylesheet(app)
 
-    icon = asset_path("icon.svg")
+    icon = asset_path("icon.ico")
+    if not icon.is_file():
+        icon = asset_path("icon.svg")
     if icon.is_file():
         app.setWindowIcon(QIcon(str(icon)))
 

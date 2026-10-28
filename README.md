@@ -1,8 +1,21 @@
 # SubDrop · 拖进去，出字幕
 
+[![CI](https://github.com/compassscout/subdrop/actions/workflows/ci.yml/badge.svg)](https://github.com/compassscout/subdrop/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/compassscout/subdrop)](https://github.com/compassscout/subdrop/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 ![SubDrop 主界面](docs/screenshot.png)
 
 把本地视频拖进窗口，几分钟后旁边多出一个 `.srt`。
+
+## 下载（Windows 免安装）
+
+1. 打开 [Releases](https://github.com/compassscout/subdrop/releases/latest)，下载 `SubDrop-windows-x64.zip`（约 38 MB）
+2. 解压到任意目录，双击 `SubDrop.exe`
+3. 系统里需要有 ffmpeg（`ffmpeg -version` 能跑就行），否则设置页会提示
+
+不需要装 Python。首次运行去「设置」填一个 API Key，之后就不用再管了。
+
 
 专为**长视频**做的：6 小时课程、10 小时直播回放，切成 10 分钟一块送去识别，
 边转边删，断点续跑，中途崩了重开能接着来。
