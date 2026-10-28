@@ -1,0 +1,239 @@
+* {
+    font-family: "Microsoft YaHei UI", "Segoe UI", "PingFang SC", sans-serif;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+QMainWindow, QWidget#root {
+    background: #f4f6fb;
+}
+
+/* ---------- 侧边栏 ---------- */
+QWidget#sidebar {
+    background: #ffffff;
+    border-right: 1px solid #e6ebf3;
+}
+
+QLabel#brand {
+    font-size: 19px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: 0.5px;
+}
+
+QLabel#brandSub {
+    font-size: 11px;
+    color: #8a94a6;
+}
+
+QPushButton#navButton {
+    text-align: left;
+    padding: 9px 12px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #4b5563;
+}
+
+QPushButton#navButton:hover {
+    background: #f1f5fd;
+}
+
+QPushButton#navButton:checked {
+    background: #e8f0fe;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+QPushButton#navButton:disabled {
+    color: #b6bfcd;
+}
+
+QLabel#navHint {
+    color: #b6bfcd;
+    font-size: 11px;
+}
+
+QLabel#version {
+    color: #aab3c2;
+    font-size: 11px;
+}
+
+/* ---------- 通用 ---------- */
+QLabel#pageTitle {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+}
+
+QLabel#pageSubtitle {
+    color: #6b7280;
+    font-size: 12px;
+}
+
+QFrame#card {
+    background: #ffffff;
+    border: 1px solid #e6ebf3;
+    border-radius: 12px;
+}
+
+QLabel#cardTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+QLabel#muted {
+    color: #8a94a6;
+    font-size: 12px;
+}
+
+QLabel#fileName {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+QLabel#statValue {
+    font-size: 13px;
+    color: #374151;
+}
+
+/* 拖拽区 */
+QFrame#dropArea {
+    background: #ffffff;
+    border: 2px dashed #c9d4e6;
+    border-radius: 14px;
+}
+
+QFrame#dropArea[dragActive="true"] {
+    border: 2px dashed #2563eb;
+    background: #f5f9ff;
+}
+
+QLabel#dropTitle {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+QLabel#dropHint {
+    color: #8a94a6;
+    font-size: 12px;
+}
+
+QLabel#dropIcon {
+    font-size: 34px;
+}
+
+/* 按钮 */
+QPushButton#primary {
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-weight: 600;
+}
+
+QPushButton#primary:hover { background: #1d4ed8; }
+QPushButton#primary:pressed { background: #1e40af; }
+QPushButton#primary:disabled { background: #c7d5ee; color: #eef2f9; }
+
+QPushButton#ghost {
+    background: #ffffff;
+    border: 1px solid #d8e0ec;
+    border-radius: 8px;
+    padding: 9px 16px;
+    color: #374151;
+}
+
+QPushButton#ghost:hover { background: #f6f8fc; border-color: #b9c6da; }
+QPushButton#ghost:disabled { color: #b6bfcd; border-color: #e6ebf3; }
+
+QPushButton#link {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    padding: 0;
+    text-align: left;
+}
+
+QPushButton#link:hover { text-decoration: underline; }
+
+/* 输入控件 */
+QLineEdit, QComboBox, QSpinBox {
+    background: #ffffff;
+    border: 1px solid #d8e0ec;
+    border-radius: 7px;
+    padding: 7px 10px;
+    min-height: 18px;
+    selection-background-color: #dbeafe;
+}
+
+QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+    border: 1px solid #2563eb;
+}
+
+QComboBox {
+    padding-right: 24px;
+}
+
+QComboBox QAbstractItemView {
+    border: 1px solid #d8e0ec;
+    selection-background-color: #e8f0fe;
+    selection-color: #1d4ed8;
+    outline: none;
+}
+
+QCheckBox { color: #374151; spacing: 8px; }
+
+/* 进度条 */
+QProgressBar {
+    background: #e9eef7;
+    border: none;
+    border-radius: 6px;
+    height: 12px;
+    text-align: center;
+    color: transparent;
+}
+
+QProgressBar::chunk {
+    background: #2563eb;
+    border-radius: 6px;
+}
+
+/* 日志 */
+QPlainTextEdit#log {
+    background: #fbfcfe;
+    border: 1px solid #eef2f8;
+    border-radius: 10px;
+    color: #4b5563;
+    font-family: "Cascadia Mono", "Consolas", monospace;
+    font-size: 12px;
+    padding: 8px;
+}
+
+QScrollBar:vertical {
+    background: transparent;
+    width: 10px;
+    margin: 2px;
+}
+
+QScrollBar::handle:vertical {
+    background: #cfd8e6;
+    border-radius: 5px;
+    min-height: 30px;
+}
+
+QScrollBar::handle:vertical:hover { background: #b6c3d8; }
+QScrollBar::add-line, QScrollBar::sub-line { height: 0; }
+QScrollBar::add-page, QScrollBar::sub-page { background: transparent; }
+
+QToolTip {
+    background: #111827;
+    color: #ffffff;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 6px;
+}

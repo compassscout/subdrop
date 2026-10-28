@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "subdrop"
+version = "0.1.0"
+description = "拖进去，出字幕 —— 本地视频一键生成 SRT 字幕"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "SubDrop contributors" }]
+keywords = ["subtitle", "srt", "asr", "whisper", "video"]
+dependencies = [
+    "PySide6>=6.6",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov"]
+
+[project.gui-scripts]
+subdrop = "subdrop.__main__:main"
+
+[project.scripts]
+subdrop-cli = "subdrop.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/subdrop"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402"]
+"tests/*" = ["B018"]
